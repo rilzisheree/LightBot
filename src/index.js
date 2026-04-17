@@ -3,6 +3,15 @@ const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js'
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
+
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end('Bot is running.');
+}).listen(PORT, () => {
+  console.log(`✅ HTTP server listening on port ${PORT}`);
+});
 
 const client = new Client({
   intents: [
@@ -18,7 +27,6 @@ const client = new Client({
 
 client.commands = new Collection();
 
-// Load commands
 const commandsPath = path.join(__dirname, 'commands', 'moderation');
 for (const file of fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'))) {
   const command = require(path.join(commandsPath, file));
@@ -28,7 +36,6 @@ for (const file of fs.readdirSync(commandsPath).filter(f => f.endsWith('.js'))) 
   }
 }
 
-// Load events
 const eventsPath = path.join(__dirname, 'events');
 for (const file of fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'))) {
   const event = require(path.join(eventsPath, file));
@@ -41,7 +48,6 @@ for (const file of fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'))) {
   console.log(`Loaded event: ${event.name}`);
 }
 
-// Connect to MongoDB then login
 (async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
@@ -50,6 +56,5 @@ for (const file of fs.readdirSync(eventsPath).filter(f => f.endsWith('.js'))) {
     console.error('❌ MongoDB connection failed:', err);
     process.exit(1);
   }
-
   await client.login(process.env.DISCORD_TOKEN);
 })();
